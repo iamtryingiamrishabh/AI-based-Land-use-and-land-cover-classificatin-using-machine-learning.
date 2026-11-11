@@ -7,6 +7,9 @@ Install: pip install rasterio geopandas numpy scikit-learn joblib
 Run from your project folder after editing the CONFIG block:
     python lulc_baseline.py
 """
+import os
+import fnmatch
+from pathlib import Path
 import numpy as np
 import rasterio
 import joblib
@@ -17,19 +20,38 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix
 
 # ------------------------------------------------------------------ CONFIG
-S2 = {
-    "B02": "data/T43RGM_20260910T052641_B02_10m_2.jp2",
-    "B03": "data/T43RGM_20260910T052641_B03_10m_2.jp2",
-    "B04": "data/T43RGM_20260910T052641_B04_10m_2.jp2",
-    "B08": "data/T43RGM_20260910T052641_B08_10m_2.jp2",
-}
-# Optional 20 m L2A bands. Set to a path to use them, or leave None.
-B11 = None   # e.g. "data/T43RGM_20260910T052641_B11_20m.jp2"
-B12 = None
-SCL = None   # scene classification, used as the cloud mask
+PROJECT_ROOT = Path(__file__).resolve().parents[1]   # folder above scripts/
+SEARCH_ROOT = PROJECT_ROOT    # or narrow it: Path(r"D:\major_project\data")
 
-WORLDCOVER = "data/ESA_WorldCover_10m_2021_v200_N27E075_Map.tif"
-AOI = None   # e.g. "data/greater_noida.geojson" (any CRS). None = whole tile.
+
+def find(pattern, required=True):
+    """Find a file by name pattern anywhere under SEARCH_ROOT (skips venvs/hidden dirs)."""
+    skip = {"site-packages", "venv", "env", "node_modules", "__pycache__"}
+    for root, dirs, files in os.walk(SEARCH_ROOT):
+        dirs[:] = [d for d in dirs if not d.startswith(".") and d.lower() not in skip]
+        for f in sorted(files):
+            if fnmatch.fnmatch(f, pattern):
+                return str(Path(root) / f)
+    if required:
+        raise FileNotFoundError(f"No file matching {pattern!r} under {SEARCH_ROOT}. "
+                                "Move the file there or edit SEARCH_ROOT.")
+    return None
+
+
+S2 = {
+    "B02": find("*B02_10m*.jp2"),
+    "B03": find("*B03_10m*.jp2"),
+    "B04": find("*B04_10m*.jp2"),
+    "B08": find("*B08_10m*.jp2"),
+}
+# Optional 20 m L2A bands: used automatically if found, otherwise skipped.
+B11 = find("*B11_20m*.jp2", required=False)
+B12 = find("*B12_20m*.jp2", required=False)
+SCL = find("*SCL_20m*.jp2", required=False)   # cloud mask
+
+WORLDCOVER = find("*WorldCover*N27E075*Map*.tif")
+AOI = None   # e.g. str(PROJECT_ROOT / "data" / "greater_noida.geojson"). None = whole tile.
+print("Using:", S2, WORLDCOVER, "B11:", B11, "SCL:", SCL, sep="\n  ")
 
 BOA_OFFSET = 1000      # L2A processing baseline >= 04.00 (your Sept 2026 scene)
 CLASS_MAP = {10: 0, 40: 1, 50: 2}          # WorldCover code -> our class

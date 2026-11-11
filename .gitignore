@@ -1,18 +1,22 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
 
-# Local datasets and backups
-data/satellite/
-data/boundary/
-training_data/
-outputs/backups/
-models/*backup*
+# Large data and outputs (download separately, see README)
+data/
+outputs/
+archive/
+*.jp2
+*.tif
+*.tiff
+*.joblib
+*.npz
 
-# Intermediate rasters
-outputs/rasters/NDVI.tif
-outputs/rasters/NDWI.tif
-outputs/rasters/SCL_corrected.tif
-outputs/rasters/cloud_mask.tif
-outputs/rasters/feature_stack.tif
-outputs/rasters/masked_feature_stack.tif
-outputs/rasters/true_colour.tif
-outputs/rasters/lulc_classification.tif
-outputs/rasters/lulc_classification_rf.tif
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
