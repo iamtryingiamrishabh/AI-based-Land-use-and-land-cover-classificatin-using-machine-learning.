@@ -19,4 +19,10 @@ archive/
 .vscode/
 .idea/
 .DS_Store
-Thumbs.db
+Thumbs.db*.tif
+*.tiff
+.venv/
+__pycache__/
+training_data/
+outputs/backups/
+outputs/rasters/

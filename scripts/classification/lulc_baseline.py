@@ -20,8 +20,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix
 
 # ------------------------------------------------------------------ CONFIG
-PROJECT_ROOT = Path(__file__).resolve().parents[1]   # folder above scripts/
-SEARCH_ROOT = PROJECT_ROOT    # or narrow it: Path(r"D:\major_project\data")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SEARCH_ROOT = PROJECT_ROOT
 
 
 def find(pattern, required=True):
@@ -39,10 +39,10 @@ def find(pattern, required=True):
 
 
 S2 = {
-    "B02": find("*B02_10m*.jp2"),
-    "B03": find("*B03_10m*.jp2"),
-    "B04": find("*B04_10m*.jp2"),
-    "B08": find("*B08_10m*.jp2"),
+    "B02": find("*B02_20m*.jp2"),
+    "B03": find("*B03_20m*.jp2"),
+    "B04": find("*B04_20m*.jp2"),
+    "B8A": find("*B8A_20m*.jp2"),
 }
 # Optional 20 m L2A bands: used automatically if found, otherwise skipped.
 B11 = find("*B11_20m*.jp2", required=False)
@@ -113,10 +113,18 @@ def onto_grid(path, resampling, dtype):
 
 
 # ---- bands and indices
-b02, b03, b04, b08 = (to_reflectance(read_10m(S2[k])) for k in ("B02", "B03", "B04", "B08"))
-arrays = {"B02": b02, "B03": b03, "B04": b04, "B08": b08,
-          "NDVI": (b08 - b04) / (b08 + b04 + 1e-6),
-          "NDWI": (b03 - b08) / (b03 + b08 + 1e-6)}
+b02, b03, b04, b08 = (
+    to_reflectance(read_10m(S2[k]))
+    for k in ("B02", "B03", "B04", "B8A")
+)
+arrays = {
+    "B02": b02,
+    "B03": b03,
+    "B04": b04,
+    "B8A": b08,
+    "NDVI": (b08 - b04) / (b08 + b04 + 1e-6),
+    "NDWI": (b03 - b08) / (b03 + b08 + 1e-6)
+}
 if B11:
     b11 = to_reflectance(onto_grid(B11, Resampling.bilinear, "float32"))
     arrays["B11"] = b11
